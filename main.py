@@ -42,6 +42,81 @@ def halaman_awal():
         halaman_awal()
 
 
+
+#~Page login customer
+
+user_login = []
+
+def login_cust():
+    clear()
+    print("+========================================================+")
+    print("|                   LOGIN as CUSTOMER                    |")
+    print("+========================================================+")
+    access_masuk = input("Masukkan username : ")
+    if access_masuk == '':
+        print("Input username!")
+        time.sleep(2)
+        return login_cust()
+    else:
+        user_login.append(access_masuk) #digunakan untuk mengidentifikasi user login
+
+    pw_login = input("Masukkan password : ")
+    if pw_login == '':
+        print("Input password!")
+        time.sleep(3)
+        return login_cust()
+
+    query_login_cust = f"SELECT * from customer WHERE usernamecust = '{access_masuk}' AND pwcust = '{pw_login}'"
+    cur.execute(query_login_cust)
+    rows = cur.fetchone() 
+    
+    if rows is None:
+        print("Username atau password salah\n")
+        input("Tekan enter untuk mencoba lagi...")
+        return login_cust()
+    else:
+        clear()
+        print(Fore.GREEN + "Login berhasil!" + Fore.RESET)
+        time.sleep(3)
+        return db_customer()
+
+
+#~login admin
+admin_login = []
+
+def login_admin():
+    clear()
+    print("+========================================================+")
+    print("|                     LOGIN as ADMIN                     |")
+    print("+========================================================+")
+    access_masuk = input("Masukkan no. telepon : ")
+    if access_masuk == '':
+        print("Input no. telepon!")
+        time.sleep(2)
+        return login_admin()
+    else:
+        admin_login.append(access_masuk) #digunakan untuk mengidentifikasi user login
+
+    pw_login = input("Masukkan password : ")
+    if pw_login == '':
+        print("Input password!")
+        time.sleep(3)
+        return login_admin()
+
+    query_login_cust = f"SELECT * from admin WHERE telpadmin = '{access_masuk}' AND pwadmin = '{pw_login}'"
+    cur.execute(query_login_cust)
+    rows = cur.fetchone() 
+    
+    if rows is None:
+        print("no. telepon atau password salah\n")
+        input("Tekan enter untuk mencoba lagi...")
+        return login_admin()
+    else:
+        clear()
+        print(Fore.GREEN + "Login berhasil!" + Fore.RESET)
+        time.sleep(3)
+        return db_admin()
+
 #~~~ dashboard customer
 def db_customer():
     clear()
