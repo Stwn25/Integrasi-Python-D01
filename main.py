@@ -1,9 +1,90 @@
 import psycopg2
+import pandas as pd
+import os
+def clear(): 
+    os.system('cls')
+import time
+import datetime
+from tabulate import tabulate
+from colorama import init, Fore
+datetime = datetime.datetime.now()
 
 conn = psycopg2.connect(database='Basda', user='postgres', password='iwanganteng', host='localhost', port=5432)
 cur = conn.cursor()
 
-def Option():
+#~~~Page awal
+
+def halaman_awal():
+    clear()
+    print("+========================================================+")
+    print("|                    SELAMAT DATANG DI                   |")
+    print("|                      GH ADVENTURE                      |")
+    print("+========================================================+")
+    print("|   [1]   Sign In Customer                               |")
+    print("|   [2]   Login Customer                                 |")
+    print("|   [3]   Login Admin                                    |")
+    print("|   [4]   Exit                                           |")
+    print("+========================================================+")
+    pilih_kode = input(" Pilih kode (1/2/3/4): ")
+    if pilih_kode == '1':
+        clear()
+        regis_cust()
+    elif pilih_kode == '2':
+        clear()
+        login_cust()
+    elif pilih_kode == '3':
+        clear()
+        login_admin()
+    elif pilih_kode == '4':
+        exit
+    else:
+        print("\nMasukkan input yang sesuai!\n")
+        halaman_awal()
+
+
+#~~~ dashboard customer
+def db_customer():
+    clear()
+    
+#~~~ dashboard admin
+def db_admin():
+    clear()
+    print("+========================================================+")
+    print("|                      SELAMAT DATANG                    |")
+    print("+========================================================+")
+    print("|   [1]   Kelola Peralatan                               |")
+    print("|   [2]   Booking Customer                               |")
+    print("|   [3]   Riwayat Transaksi                              |")
+    print("|   [4]   Exit                                           |")
+    print("+========================================================+")
+
+    pilih_kode = input(" Pilih kode (1/2/3/4): ")
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def kelola_peralatan():
     print("1. Tambah Peralatan\n2. Lihat Peralatan")
     pilih = input("Pilih Opsi: ")
     if pilih == "1":
@@ -18,8 +99,8 @@ def read_peralatan():
     lihat_data = "Select * from peralatan"
     cur.execute(lihat_data)
     data = cur.fetchall()
-    for row in data:
-        print(row)
+    headers = ["Kode Peralatan", "Nama Peralatan", "Stok", "Harga Sewa", "Keterangan", "Kode Jenis"]
+    print(tabulate(data, headers=headers, tablefmt="grid"))
     cur.close() 
     conn.close()
 
@@ -36,8 +117,6 @@ def create_peralatan():
     print("\nKode jenis peralatan: ")
     for row in data_jenis:
         print(row)
-    # cur.close() 
-    # conn.close()
 
     tanya = int(input("\nIngin memasukkan berapa data?: "))
     for i in range(tanya):
@@ -60,4 +139,4 @@ def create_peralatan():
 
 
 
-Option()
+halaman_awal()
