@@ -41,6 +41,62 @@ def halaman_awal():
         print("\nMasukkan input yang sesuai!\n")
         halaman_awal()
 
+#~Page registrasi customer
+
+def regis_cust():
+    pw_cust = []
+    print("+========================================================+")
+    print("|                     Registrasi                         |")
+    print("+========================================================+")
+    mandatory = Fore.RED + "*" + Fore.RESET
+    nama_regis = input(f"Masukkan nama{mandatory}        : ")
+    if nama_regis == '':
+        time.sleep(2)
+        clear()
+        print("Input data registasi!\n")
+        regis_cust()
+
+    username_regis = input(f"Masukkan username{mandatory}    : ")
+    if username_regis == '':
+        time.sleep(2)
+        clear()
+        print("Input data registasi!\n")
+        regis_cust()
+
+    email_regis = input(f"Masukkan email{mandatory}       : ")
+    if email_regis == '':
+        time.sleep(2)
+        clear()
+        print("Input data registasi!\n")
+        regis_cust()
+
+    telp_regis = input(f"Masukkan no. telpon{mandatory}  : ")
+    if telp_regis == '':
+        time.sleep(2)
+        clear()
+        print("Input data registasi!\n")
+        regis_cust()
+
+    alamat_regis = input("Masukkan alamat       :")
+    if alamat_regis == '':
+        alamat_regis = "-"
+
+    pw = input("Masukkan password     :")
+    if alamat_regis == '':
+        print("Input data password!")
+
+    query_regis_cust = "INSERT INTO customer (namacust, usernamecust, emailcust, telpcust, alamatcust, pwcust) VALUES (%s, %s, %s, %s, %s, %s)"
+    cur.execute(query_regis_cust, (nama_regis, username_regis, email_regis, telp_regis, alamat_regis, pw))
+    time.sleep(2)
+
+    conn.commit()
+    print("\n")
+    print("+========================================================+")
+    print("|           Yeay, registrasi telah berhasil!             |")
+    print("+========================================================+\n")
+    print("Menuju halaman awal...")
+    time.sleep(3)
+    halaman_awal()
 
 
 #~Page login customer
