@@ -101,6 +101,7 @@ def regis_cust():
 #~Page login customer
 
 user_login = []
+# user_login_value = user_login[0] if user_login else None
 
 def login_cust():
     clear()
@@ -128,6 +129,7 @@ def login_cust():
     if rows is None:
         print("Username atau password salah!\n")
         input("Tekan enter untuk mencoba lagi...")
+        user_login.clear()
         login_cust()
     else:
         clear()
@@ -282,34 +284,36 @@ def booking_peralatan():
                 konfirmasi()
 
         konfirmasi()
-        
+
 def sedang_disewa():
-    print("========= SEDANG BOOKING =========")
+    print("\n========= SEDANG BOOKING =========\n")
     query_booking = "SELECT peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.statuspengembalian " \
                     "from detailtransaksi " \
                     "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
                     "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
                     "JOIN transaksi ON transaksi.notransaksi = detailtransaksi.transaksi_notransaksi " \
                     "JOIN customer ON customer.idcust = transaksi.customer_idcust " \
-                    "WHERE customer.usernamecust = 'stwnn_' AND now() < transaksi.tglpengambilan "  
+                    "WHERE customer.usernamecust = %s " \
+                    "AND now() < transaksi.tglpengambilan "  
 
-    cur.execute(query_booking)
+    cur.execute(query_booking, (user_login[0],))
     rows = cur.fetchall()
 
     headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Status"]
     print(tabulate(rows, headers=headers, tablefmt='pretty'))
 
-    print("========= SEDANG DISEWA =========")
+    print("\n========= SEDANG DISEWA =========\n")
     query_sewa ="SELECT peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.statuspengembalian " \
                 "from detailtransaksi " \
                 "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
                 "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
                 "JOIN transaksi ON transaksi.notransaksi = detailtransaksi.transaksi_notransaksi " \
                 "JOIN customer ON customer.idcust = transaksi.customer_idcust " \
-                "WHERE customer.usernamecust = 'stwnn_' AND now() > transaksi.tglpengambilan AND now() < transaksi.tglpengembalian"  
+                "WHERE customer.usernamecust = %s" \
+                "AND now() > transaksi.tglpengambilan AND now() < transaksi.tglpengembalian"  
 
     
-    cur.execute(query_sewa)
+    cur.execute(query_sewa, (user_login[0],))
     rows = cur.fetchall()
 
     headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Status"]
