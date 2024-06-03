@@ -1,16 +1,17 @@
 import psycopg2
-import pandas as pd
 import os
 def clear(): 
     os.system('cls')
 import time
 import datetime
+import stdiomask 
 from tabulate import tabulate
 from colorama import init, Fore
 datetime = datetime.datetime.now()
 
 conn = psycopg2.connect(database='plis', user='postgres', password='iwanganteng', host='localhost', port=5432)
 cur = conn.cursor()
+
 
 #~~~Page awal
 
@@ -50,28 +51,28 @@ def regis_cust():
     mandatory = Fore.RED + "*" + Fore.RESET
     nama_regis = input(f"Masukkan nama{mandatory}        : ")
     if nama_regis == '':
-        time.sleep(2)
+        time.sleep(1)
         clear()
         print("Input data registasi!\n")
         regis_cust()
 
     username_regis = input(f"Masukkan username{mandatory}    : ")
     if username_regis == '':
-        time.sleep(2)
+        time.sleep(1)
         clear()
         print("Input data registasi!\n")
         regis_cust()
 
     email_regis = input(f"Masukkan email{mandatory}       : ")
     if email_regis == '':
-        time.sleep(2)
+        time.sleep(1)
         clear()
         print("Input data registasi!\n")
         regis_cust()
 
     telp_regis = input(f"Masukkan no. telpon{mandatory}  : ")
     if telp_regis == '':
-        time.sleep(2)
+        time.sleep(1)
         clear()
         print("Input data registasi!\n")
         regis_cust()
@@ -86,7 +87,7 @@ def regis_cust():
 
     query_insert = "INSERT INTO customer (namacust, usernamecust, emailcust, telpcust, alamatcust, pwcust) VALUES (%s, %s, %s, %s, %s, %s)"
     cur.execute(query_insert, (nama_regis, username_regis, email_regis, telp_regis, alamat_regis, pw))
-    time.sleep(2)
+    time.sleep(1)
 
     conn.commit()
     print("\n")
@@ -116,7 +117,7 @@ def login_cust():
     else:
         user_login.append(access_masuk) #digunakan untuk mengidentifikasi user login
 
-    pw_login = input("Masukkan password : ")
+    pw_login = stdiomask.getpass("Masukkan password : ")
     if pw_login == '':
         print("Input password!")
         time.sleep(1)
@@ -140,7 +141,7 @@ def login_cust():
 
 #~login admin
 
-admin_login = ''
+admin_login = []
 
 def login_admin():
     clear()
@@ -155,7 +156,7 @@ def login_admin():
     else:
         admin_login.append(access_masuk) #digunakan untuk mengidentifikasi user login
 
-    pw_login = input("Masukkan password : ")
+    pw_login = stdiomask.getpass("Masukkan password : ")
     if pw_login == '':
         print("Input password!")
         time.sleep(1)
@@ -185,10 +186,10 @@ def login_admin():
 def db_customer():
     clear()
     print("+========================================================+")
-    print("|              SELAMAT DATANG, CUSTOMER                  |")
+    print(f"|              SELAMAT DATANG, {user_login[0]}                  |")
     print("+========================================================+")
     print("|   [1]   Booking Peralatan                              |")
-    print("|   [2]   Penyewaan (sedang disewa/ sedang booking)      |")
+    print("|   [2]   Penyewaan (Booking/ Sedang disewa)             |")
     print("|   [3]   Riwayat Penyewaan                              |")
     print("|   [4]   Exit                                           |")
     print("+========================================================+")
@@ -204,7 +205,12 @@ def db_customer():
         clear()
         riwayat_peminjaman()
     elif pilih_kode == '4':
-        None
+        time.sleep(1)
+        clear()
+        user_login.clear()
+        halaman_awal()
+    else:
+        db_customer()
 
 def booking_peralatan():
     clear()
@@ -218,76 +224,95 @@ def booking_peralatan():
     pilih = input("Kode peralatan yang ingin dibooking (b, untuk batal) : ")
     query_cek = f"SELECT * FROM peralatan WHERE noperalatan = '{pilih}'"
     cur.execute(query_cek)
-    rows = cur.fetchone()
+    stok = cur.fetchone()[2]
 
-    if pilih == 'b':
+    if stok <= 0:
+        print("Stok telah habis!")
         time.sleep(2)
         booking_peralatan()
-    elif rows is None:
-        print("\nKode peralatan tidak tersedia!")
-        input("Tekan enter untuk mencoba lagi...")
-        booking_peralatan()
     else:
-        jumlah = int(input("Jumlah yang ingin disewa    :"))
-        jumlah1 = rows[3] * jumlah 
-        tgl_pengambilan = input("Tanggal pengambilan (yyyy-mm-dd)   :")
-        tgl_pengembalian = input("Tanggal pengembalian (yyyy-mm-dd)   :")
-        tgl_pengambilan_date = datetime.strptime(tgl_pengambilan, "%Y-%m-%d")
-        tgl_pengembalian_date = datetime.strptime(tgl_pengembalian, "%Y-%m-%d")
-        selisih_hari = tgl_pengembalian_date - tgl_pengambilan_date
-        selisih_hari_int = selisih_hari.days
-        total_harga = jumlah1 * selisih_hari_int
+        cur.execute(query_cek)
+        rows = cur.fetchone()
 
-        print("\n+==============================================================+")
-        print(f"|   Customer: {user_login}                                       |")
-        print(f"|                                                              |")
-        print(f"|      Kode Peralatan        : {pilih}                             |")
-        print(f"|      Stok yang disewa      : {jumlah}                               |")
-        print(f"|      Tanggal Pengambilan   : {tgl_pengambilan}                      |")
-        print(f"|      Tanggal Pengembalian  : {tgl_pengembalian}                      |")
-        print(f"|      Durasi Penyewaan      : {selisih_hari}                 |")
-        print(f"|      Harga Sewa            : {total_harga}                           |")
-        print(f"|                                                              |")
-        print(f"|             [c] Cancel           [k] konfirmasi              |")
-        print("+==============================================================+")
-        
-        def konfirmasi():
-            konfirm = input("(c/k) : ")
-            if konfirm == 'c':
-                time.sleep(2)
-                booking_peralatan()
-            elif konfirm == 'k':
-                cur.execute("SELECT idcust FROM customer WHERE usernamecust = %s", (user_login[0],))
-                idcust = cur.fetchone()[0]
+        if pilih == 'b':
+            time.sleep(1)
+            booking_peralatan()
+        elif rows is None:
+            print("\nKode peralatan tidak tersedia!")
+            input("Tekan enter untuk mencoba lagi...")
+            booking_peralatan()
+        else:
+            jumlah = int(input("Jumlah yang ingin disewa    :"))
+            jumlah1 = rows[3] * jumlah 
+            print(f"\nMaksimal tanggal pengambilan, 3 hari dari sekarang {datetime.now()}\n")
+            tgl_pengambilan = input("Tanggal pengambilan (yyyy-mm-dd)   :")
+            tgl_pengembalian = input("Tanggal pengembalian (yyyy-mm-dd)   :")
+            tgl_pengambilan_date = datetime.strptime(tgl_pengambilan, "%Y-%m-%d")
+            tgl_pengembalian_date = datetime.strptime(tgl_pengembalian, "%Y-%m-%d")
+            selisih_hari = tgl_pengembalian_date - tgl_pengambilan_date
+            selisih_hari_int = selisih_hari.days
+            total_harga = jumlah1 * selisih_hari_int
 
-                query_pembayaran = "INSERT INTO pembayaran (keterangan) VALUES(%s) RETURNING idpembayaran"
-                cur.execute(query_pembayaran, (f"Pembayaran oleh {user_login}",))
-                idpembayaran = cur.fetchone()[0]
-                conn.commit()
+            print("\n+==============================================================+")
+            print(f"|   Customer: {user_login}                                       |")
+            print(f"|                                                              |")
+            print(f"|      Kode Peralatan        : {pilih}                             |")
+            print(f"|      Stok yang disewa      : {jumlah}                               |")
+            print(f"|      Tanggal Pengambilan   : {tgl_pengambilan}                      |")
+            print(f"|      Tanggal Pengembalian  : {tgl_pengembalian}                      |")
+            print(f"|      Durasi Penyewaan      : {selisih_hari}                 |")
+            print(f"|      Harga Sewa            : {total_harga}                           |")
+            print(f"|                                                              |")
+            print(f"|             [c] Cancel           [k] konfirmasi              |")
+            print("+==============================================================+")
+            
+            def konfirmasi():
+                konfirm = input("(c/k) : ")
+                if konfirm == 'c':
+                    time.sleep(1)
+                    booking_peralatan()
+                elif konfirm == 'k':
+                    query_stok = "UPDATE peralatan SET stokperalatan = stokperalatan - %s WHERE noperalatan = %s"
+                    cur.execute(query_stok, (jumlah, pilih))
+                    conn.commit()
 
-                query_transaksi = "INSERT INTO transaksi (tglpengambilan, tglpengembalian, customer_idcust, admin_noadmin, pembayaran_idpembayaran) VALUES (%s, %s, %s, %s, %s) RETURNING notransaksi"
-                cur.execute(query_transaksi, (tgl_pengambilan, tgl_pengembalian, idcust, 1, idpembayaran))
-                conn.commit()
-                notransaksi = cur.fetchone()[0]
+                    cur.execute("SELECT idcust FROM customer WHERE usernamecust = %s", (user_login[0],))
+                    idcust = cur.fetchone()[0]
 
-                query_detail_transaksi = "INSERT INTO detailtransaksi (transaksi_notransaksi, peralatan_noperalatan, statuspengembalian, denda) VALUES (%s,%s,%s,%s)"
-                cur.execute(query_detail_transaksi, (notransaksi, pilih, 'Sewa', 0))
-                conn.commit()
-                
-                time.sleep(2)
-                            
-                print("\n+==========================================================+")
-                print("| Yeay booking selesai, ambil peralatan sesuai tanggal ya! |")
-                print("+==========================================================+\n")
+                    query_pembayaran = "INSERT INTO pembayaran (keterangan) VALUES(%s) RETURNING idpembayaran"
+                    cur.execute(query_pembayaran, (f"Pembayaran oleh {user_login}",))
+                    idpembayaran = cur.fetchone()[0]
+                    conn.commit()
 
-            else: 
-                konfirmasi()
+                    query_transaksi = "INSERT INTO transaksi (tglpengambilan, tglpengembalian, customer_idcust, admin_noadmin, pembayaran_idpembayaran) VALUES (%s, %s, %s, %s, %s) RETURNING notransaksi"
+                    cur.execute(query_transaksi, (tgl_pengambilan, tgl_pengembalian, idcust, 1, idpembayaran))
+                    conn.commit()
+                    notransaksi = cur.fetchone()[0]
 
-        konfirmasi()
+                    query_detail_transaksi = "INSERT INTO detailtransaksi (transaksi_notransaksi, peralatan_noperalatan, statuspengembalian, denda, stokdisewa) VALUES (%s,%s,%s,%s, %s)"
+                    cur.execute(query_detail_transaksi, (notransaksi, pilih, 'Sewa', 0, jumlah))
+                    conn.commit()
+
+                    query_stok_disewa = "select "
+                    
+                    time.sleep(1)
+                                
+                    print("\n+==========================================================+")
+                    print("| Yeay booking selesai, ambil peralatan sesuai tanggal ya! |")
+                    print("+==========================================================+\n")
+
+                else: 
+                    konfirmasi()
+
+            konfirmasi()
+
+            print("Kembali ke dashboard...")
+            time.sleep(3)
+            db_customer()
 
 def sedang_disewa():
     print("\n========= SEDANG BOOKING =========\n")
-    query_booking = "SELECT peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.statuspengembalian " \
+    query_booking = "SELECT peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.stokdisewa, detailtransaksi.stokdisewa * peralatan.hargasewa, REPLACE(detailtransaksi.statuspengembalian, 'Sewa', 'Booked') " \
                     "from detailtransaksi " \
                     "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
                     "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
@@ -299,11 +324,11 @@ def sedang_disewa():
     cur.execute(query_booking, (user_login[0],))
     rows = cur.fetchall()
 
-    headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Status"]
+    headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Jumlah", "Harga", "Status"]
     print(tabulate(rows, headers=headers, tablefmt='pretty'))
 
     print("\n========= SEDANG DISEWA =========\n")
-    query_sewa ="SELECT peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.statuspengembalian " \
+    query_sewa ="SELECT peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.stokdisewa, detailtransaksi.stokdisewa * peralatan.hargasewa, detailtransaksi.statuspengembalian " \
                 "from detailtransaksi " \
                 "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
                 "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
@@ -316,15 +341,38 @@ def sedang_disewa():
     cur.execute(query_sewa, (user_login[0],))
     rows = cur.fetchall()
 
-    headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Status"]
+    headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Jumlah", "Harga", "Status"]
     print(tabulate(rows, headers=headers, tablefmt='pretty'))
-
-    
+    ex = input("\nenter, untuk kembali...")
+    if ex == '':
+        time.sleep(1)
+        db_customer()
+    else:
+        riwayat_peminjaman()
 
 
 def riwayat_peminjaman():
-    query = "SELECT"
+    print("\n========= RIWAYAT PENYEWAAN =========\n")
+    query_riwayat = "SELECT peralatan.namaperalatan, transaksi.tglpengambilan, transaksi.tglpengembalian, detailtransaksi.stokdisewa, detailtransaksi.stokdisewa * peralatan.hargasewa, REPLACE(detailtransaksi.statuspengembalian, 'Sewa', 'Dikembalikan') " \
+                    "from detailtransaksi " \
+                    "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
+                    "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
+                    "JOIN transaksi ON transaksi.notransaksi = detailtransaksi.transaksi_notransaksi " \
+                    "JOIN customer ON customer.idcust = transaksi.customer_idcust " \
+                    "WHERE customer.usernamecust = %s " \
+                    "AND now() > transaksi.tglpengembalian "  
+    
+    cur.execute(query_riwayat, (user_login[0],))
+    rows = cur.fetchall()
 
+    headers = ["Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Jumlah", "Harga", "Status"]
+    print(tabulate(rows, headers=headers, tablefmt='pretty'))
+    ex = input("\nenter, untuk kembali...")
+    if ex == '':
+        time.sleep(1)
+        db_customer()
+    else:
+        riwayat_peminjaman()
 
 #==================================================================================================================
                                                 # END CUSTOMER
@@ -343,7 +391,7 @@ def db_admin():
     print("|               SELAMAT DATANG, ADMIN                    |")
     print("+========================================================+")
     print("|   [1]   Kelola Peralatan                               |")
-    print("|   [2]   Kelola Penyewaan                               |")
+    print("|   [2]   Penyewaan (Booking/Sedang disewa)              |")
     print("|   [3]   Riwayat Penyewaan                              |")
     print("|   [4]   Exit                                           |")
     print("+========================================================+")
@@ -353,11 +401,15 @@ def db_admin():
         clear()
         kelola_peralatan()
     elif pilih_kode == '2':
-        None
+        clear()
+        kelola_penyewaan()
     elif pilih_kode == '3':
-        None
+        clear()
+        riwayat_peminjaman_cust()
     elif pilih_kode == '4':
-        None
+        time.sleep(1)
+        admin_login.clear()
+        halaman_awal()
     
 #~~~Kelola Peralatan
 
@@ -382,7 +434,7 @@ def kelola_peralatan():
     elif pilih == "4":
         db_admin()
     else:
-        None
+        kelola_peralatan()
 
 def create_peralatan():
     query_read = "Select * from jenisperalatan"
@@ -408,7 +460,7 @@ def create_peralatan():
                             keterangan, jenis_peralatan))
     
     conn.commit()
-    time.sleep(2)
+    time.sleep(1)
 
     print("\n+========================================================+")
     print("|         Yeay, Create peralatan telah berhasil!         |")
@@ -448,12 +500,12 @@ def update_peralatan():
         cur.execute(query_update, (nama_peralatan, stok, harga, keterangan, kode_jenis, Kode_peralatan))
         conn.commit()
 
-        time.sleep(2)
+        time.sleep(1)
         print("\n+========================================================+")
         print("|         Yeay, Update peralatan telah berhasil!         |")
         print("+========================================================+\n")
         
-        time.sleep(2)
+        time.sleep(1)
         kelola_peralatan()
 
 def delete_peralatan():
@@ -463,7 +515,7 @@ def delete_peralatan():
     rows = cur.fetchone()
 
     if delete == 'b':
-        time.sleep(2)
+        time.sleep(1)
         kelola_peralatan()
     elif rows is None:
         print("\nKode peralatan tidak tersedia!")
@@ -474,19 +526,76 @@ def delete_peralatan():
         cur.execute(query_delete, (delete,))
         conn.commit()
 
-        time.sleep(2)
+        time.sleep(1)
         print("\n+========================================================+")
         print("|                Delete peralatan berhasil!              |")
         print("+========================================================+\n")
 
-        time.sleep(2)
+        time.sleep(1)
         delete_peralatan()
 
 #~~~Kelola Penyewaan
 def kelola_penyewaan():
-    None
+    print("\n========= SEDANG BOOKING =========\n")
+    query_booking = "SELECT customer.namacust, peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.stokdisewa, detailtransaksi.stokdisewa * peralatan.hargasewa, REPLACE(detailtransaksi.statuspengembalian, 'Sewa', 'Booked') as Status " \
+                    "from detailtransaksi " \
+                    "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
+                    "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
+                    "JOIN transaksi ON transaksi.notransaksi = detailtransaksi.transaksi_notransaksi " \
+                    "JOIN customer ON customer.idcust = transaksi.customer_idcust " \
+                    "WHERE now() < transaksi.tglpengambilan "  
+    
+    cur.execute(query_booking)
+    rows = cur.fetchall()
 
 
+    headers = ["Nama Customer", "Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Jumlah", "Harga", "Status"]
+    print(tabulate(rows, headers=headers, tablefmt='pretty'))
+
+    print("\n========= SEDANG DISEWA =========\n")
+    query_sewa = "SELECT customer.namacust, peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.stokdisewa, detailtransaksi.stokdisewa * peralatan.hargasewa, detailtransaksi.statuspengembalian " \
+                    "from detailtransaksi " \
+                    "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
+                    "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
+                    "JOIN transaksi ON transaksi.notransaksi = detailtransaksi.transaksi_notransaksi " \
+                    "JOIN customer ON customer.idcust = transaksi.customer_idcust " \
+                    "WHERE now() BETWEEN transaksi.tglpengambilan AND transaksi.tglpengembalian "  
+    
+    cur.execute(query_sewa)
+    rows = cur.fetchall()
+
+    headers = ["Nama Customer", "Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Jumlah", "Harga", "Status"]
+    print(tabulate(rows, headers=headers, tablefmt='pretty'))
+
+    ex = input("\nenter, untuk kembali...")
+    if ex == '':
+        time.sleep(1)
+        db_admin()
+    else:
+        kelola_penyewaan()
+
+def riwayat_peminjaman_cust():
+    print("\n========= RIWAYAT PEMINJAMAN =========\n")
+    query_sewa = "SELECT customer.namacust, peralatan.namaperalatan, transaksi.tglpengambilan,transaksi.tglpengembalian, detailtransaksi.stokdisewa, detailtransaksi.stokdisewa * peralatan.hargasewa, REPLACE(detailtransaksi.statuspengembalian, 'Sewa', 'Dikembalikan') as Status " \
+                    "from detailtransaksi " \
+                    "JOIN peralatan ON peralatan.noperalatan = detailtransaksi.peralatan_noperalatan " \
+                    "JOIN jenisperalatan ON jenisperalatan.idjenis = peralatan.jenisperalatan_idjenis " \
+                    "JOIN transaksi ON transaksi.notransaksi = detailtransaksi.transaksi_notransaksi " \
+                    "JOIN customer ON customer.idcust = transaksi.customer_idcust " \
+                    "WHERE now() > transaksi.tglpengembalian "  
+    
+    cur.execute(query_sewa)
+    rows = cur.fetchall()
+
+    headers = ["Nama Customer", "Nama peralatan", "Tanggal Pengambilan", "Tanggal Pengembalian", "Jumlah", "Harga", "Status"]
+    print(tabulate(rows, headers=headers, tablefmt='pretty'))
+    
+    ex = input("\nenter, untuk kembali...")
+    if ex == '':
+        time.sleep(1)
+        db_admin()
+    else:
+        riwayat_peminjaman_cust()
 #==================================================================================================================
                                                  # END ADMIN
 #==================================================================================================================
