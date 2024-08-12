@@ -1,0 +1,119 @@
+CREATE TABLE admin (
+    noadmin   INTEGER NOT NULL,
+    namaadmin VARCHAR(50) NOT NULL,
+    telpadmin VARCHAR(13 ) NOT NULL,
+    pwadmin VARCHAR(50) NOT NULL
+);
+
+ALTER TABLE admin ADD CONSTRAINT admin_pk PRIMARY KEY ( noadmin );
+
+CREATE TABLE cash (
+    idpembayaran SERIAL NOT NULL,
+    notelepon    VARCHAR(13 ) NOT NULL
+);
+
+ALTER TABLE cash ADD CONSTRAINT cash_pk PRIMARY KEY ( idpembayaran );
+
+ALTER TABLE cash ADD CONSTRAINT cash_notelepon_un UNIQUE ( notelepon );
+
+CREATE TABLE customer (
+    idcust       SERIAL NOT NULL,
+    namacust     VARCHAR(50 ) NOT NULL,
+    usernamecust VARCHAR(12) NOT NULL,
+    emailcust    VARCHAR(100 ) NOT NULL,
+    telpcust     VARCHAR(13 ) NOT NULL,
+    alamatcust   TEXT,
+    pwcust VARCHAR(50) NOT NULL
+);
+
+ALTER TABLE customer ADD CONSTRAINT customer_pk PRIMARY KEY ( idcust );
+
+CREATE TABLE detailtransaksi (
+    transaksi_notransaksi INTEGER NOT NULL,
+    peralatan_noperalatan VARCHAR(4 ) NOT NULL,
+    stokdisewa INTEGER NOT NULL, 
+    statuspengembalian    VARCHAR(20 ) NOT NULL,
+    denda                 NUMERIC NOT NULL
+);
+
+ALTER TABLE detailtransaksi ADD CONSTRAINT detailtransaksi_pk PRIMARY KEY (transaksi_notransaksi, peralatan_noperalatan );
+
+CREATE TABLE ewallet (
+    idpembayaran     SERIAL NOT NULL,
+    namawallet       VARCHAR(12 ) NOT NULL,
+    notelepon        VARCHAR(13 ) NOT NULL,
+    usernamepengguna VARCHAR(12 ) NOT NULL
+);
+
+ALTER TABLE ewallet ADD CONSTRAINT ewallet_pk PRIMARY KEY ( idpembayaran );
+
+ALTER TABLE ewallet ADD CONSTRAINT ewallet_notelepon_un UNIQUE ( notelepon );
+
+CREATE TABLE jenisperalatan (
+    idjenis   VARCHAR(4 ) NOT NULL,
+    namajenis VARCHAR(20) NOT NULL
+);
+
+ALTER TABLE jenisperalatan ADD CONSTRAINT jenisperalatan_pk PRIMARY KEY ( idjenis );
+
+CREATE TABLE pembayaran (
+    idpembayaran SERIAL NOT NULL,
+    keterangan   TEXT
+);
+
+ALTER TABLE pembayaran ADD CONSTRAINT pembayaran_pk PRIMARY KEY ( idpembayaran );
+
+CREATE TABLE peralatan (
+    noperalatan            VARCHAR(4 ) NOT NULL,
+    namaperalatan          VARCHAR(40 ) NOT NULL,
+    stokperalatan          INTEGER NOT NULL,
+    hargasewa              NUMERIC NOT NULL,
+    keterangan             TEXT,
+    jenisperalatan_idjenis VARCHAR(4 ) NOT NULL
+);
+
+ALTER TABLE peralatan ADD CONSTRAINT peralatan_pk PRIMARY KEY ( noperalatan );
+
+CREATE TABLE transaksi (
+    notransaksi             SERIAL NOT NULL,
+    tglpengambilan          DATE NOT NULL,
+    tglpengembalian         DATE NOT NULL,
+    customer_idcust         INTEGER NOT NULL,
+    admin_noadmin           INTEGER NOT NULL,
+    pembayaran_idpembayaran INTEGER NOT NULL
+);
+
+ALTER TABLE transaksi ADD CONSTRAINT transaksi_pk PRIMARY KEY ( notransaksi );
+
+ALTER TABLE cash
+    ADD CONSTRAINT cash_pembayaran_fk FOREIGN KEY ( idpembayaran )
+        REFERENCES pembayaran ( idpembayaran );
+
+ALTER TABLE detailtransaksi
+    ADD CONSTRAINT detailtransaksi_peralatan_fk FOREIGN KEY ( peralatan_noperalatan )
+        REFERENCES peralatan ( noperalatan );
+
+ALTER TABLE detailtransaksi
+    ADD CONSTRAINT detailtransaksi_transaksi_fk FOREIGN KEY ( transaksi_notransaksi )
+        REFERENCES transaksi ( notransaksi );
+
+ALTER TABLE ewallet
+    ADD CONSTRAINT ewallet_pembayaran_fk FOREIGN KEY ( idpembayaran )
+        REFERENCES pembayaran ( idpembayaran );
+
+ALTER TABLE peralatan
+    ADD CONSTRAINT peralatan_jenisperalatan_fk FOREIGN KEY ( jenisperalatan_idjenis )
+        REFERENCES jenisperalatan ( idjenis );
+
+
+ALTER TABLE transaksi
+    ADD CONSTRAINT transaksi_admin_fk FOREIGN KEY ( admin_noadmin )
+        REFERENCES admin ( noadmin );
+
+ALTER TABLE transaksi
+    ADD CONSTRAINT transaksi_customer_fk FOREIGN KEY ( customer_idcust )
+        REFERENCES customer ( idcust );
+
+ALTER TABLE transaksi
+    ADD CONSTRAINT transaksi_pembayaran_fk FOREIGN KEY ( pembayaran_idpembayaran )
+        REFERENCES pembayaran ( idpembayaran );
